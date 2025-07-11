@@ -50,16 +50,12 @@ git config --global branch.sort -committerdate
 #@TODO; git pull proper config
 
 
-
 ## Unused async processes for terminal for now
 # source ~/.zsh_config/async.zsh
 
-for file in ~/.zsh_config/rc/*.zsh; do
+for file in ~/.zsh_config/*.zsh; do
     source "$file"
 done
-
-#KB Config & Alias
-source "~/.zsh_config/kbrw.zsh"
 
 # Activate custom prompt
 add-zsh-hook precmd _vbe_setprompt
