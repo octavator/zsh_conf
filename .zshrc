@@ -8,8 +8,13 @@ alias zshconfig="code ~/.zshrc"  # Ouvrir la config Zsh dans VS Code
 alias zshreload="source ~/.zshrc" # Recharger la config
 
 # Activer la correction automatique des commandes
-setopt CORRECT
-setopt CORRECT_ALL
+# setopt CORRECT
+# setopt CORRECT_ALL
+
+## SSH
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/personal_gh_key
+ssh-add ~/.ssh/id_rsa_hostinger
 
 ## Elixir
 export ERL_AFLAGS="-kernel shell_history enabled" ## Activate history in erlang Shell
@@ -53,10 +58,6 @@ git config --global branch.sort -committerdate
 ## Unused async processes for terminal for now
 # source ~/.zsh_config/async.zsh
 
-for file in ~/.zsh_config/*.zsh; do
-    source "$file"
-done
-
 # Activate custom prompt
 add-zsh-hook precmd _vbe_setprompt
 
@@ -66,6 +67,10 @@ export PATH="/opt/homebrew/bin:/usr/local/lib/ruby/gems/3.1.0/bin:/usr/local/opt
 export PATH=/usr/local/bin:$PATH
 export PATH=/Users/theophiledecagny/Documents:$PATH
 export PATH=/Users/theophiledecagny/.local/bin:$PATH
+
+for file in ~/.zsh_config/*.zsh; do
+    source "$file"
+done
 
 
 eval "$(chef shell-init zsh)"
