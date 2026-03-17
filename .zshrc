@@ -2,7 +2,12 @@
 autoload -U add-zsh-hook
 
 export PROMPT='%B%F{green}%~%f%b %# '
+export EDITOR="code"
+export HOMEBREW_NO_ANALYTICS=1
+plugins=(git ssh-agent)
 alias python="python3"
+# Maybe needed ?
+# export ZSH=$HOME/.oh-my-zsh
 
 alias zshconfig="code ~/.zshrc"  # Ouvrir la config Zsh dans VS Code
 alias zshreload="source ~/.zshrc" # Recharger la config
@@ -12,15 +17,12 @@ alias zshreload="source ~/.zshrc" # Recharger la config
 # setopt CORRECT_ALL
 
 ## SSH
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/personal_gh_key
-ssh-add ~/.ssh/id_rsa_hostinger
-
-## Elixir
-export ERL_AFLAGS="-kernel shell_history enabled" ## Activate history in erlang Shell
-alias exmix="iex -S mix"
+# eval "$(ssh-agent -s)"
+# ssh-add ~/.ssh/id_ed25519
 
 alias ll="ls -la"
+alias gC="grep -C"
+alias c="code ."
 
 ## GIT
 alias st="git status"
@@ -37,9 +39,6 @@ alias gap="git add -p"
 alias gcp="git cherry-pick"
 alias gcm="git commit -m"
 alias gbD="git branch -D"
-
-alias vpnfix="sudo launchctl unload /Library/LaunchDaemons/kbrw.strongswan.plist"
-alias infra-cli="~/Documents/chef-repo/tools/infra-cli"
 alias glg="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset' --all"
 alias gb='git branch'
 alias gbr='git branch --remote'
@@ -48,11 +47,20 @@ alias gs='git show'
 alias grma='git rebase master'
 alias gf='git fetch'
 alias gu='gsh && gpl && gshp'
-alias gC="grep -C"
+alias gpr="gh pr view --web"
 
 git config --global column.ui auto
 git config --global branch.sort -committerdate
-#@TODO; git pull proper config
+
+alias git='LC_ALL=en_GB git'
+
+
+## Ruby
+alias r="rubocop -A"
+alias t="DISABLE_SPRING=1 rails test test "
+alias rs="SIDEKIQ_INLINE=true bundle exec rails s -p 3000"
+
+#@TODO; git pull proper config ff.only/rebase
 
 
 ## Unused async processes for terminal for now
@@ -61,16 +69,20 @@ git config --global branch.sort -committerdate
 # Activate custom prompt
 add-zsh-hook precmd _vbe_setprompt
 
+## DIFT
+export DIFT="~/Documents/dift/"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/postgresql@15/lib/pkgconfig"
 
 ## PATH MANIPULATION
-export PATH="/opt/homebrew/bin:/usr/local/lib/ruby/gems/3.1.0/bin:/usr/local/opt/ruby/bin:/Users/theophiledecagny/.asdf/shims:/usr/local/opt/asdf/libexec/bin:/usr/local/opt/node@12/bin:/Users/theophiledecagny/Documents/distmix:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/Documents/chef-repo/tools"
-export PATH=/usr/local/bin:$PATH
-export PATH=/Users/theophiledecagny/Documents:$PATH
-export PATH=/Users/theophiledecagny/.local/bin:$PATH
+export PATH="/opt/homebrew/bin:/usr/local/opt/ruby/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="/opt/homebrew/opt/imagemagick@6/bin:$PATH"
+export PATH="~/.rbenv/shims:$PATH"
+
 
 for file in ~/.zsh_config/*.zsh; do
     source "$file"
 done
 
-
-eval "$(chef shell-init zsh)"
+# Added by `rbenv init` on lun. 16 mars 2026 14:01:12 CET
+eval "$(rbenv init - --no-rehash zsh)"
+export PATH="$HOME/.local/bin:$PATH"

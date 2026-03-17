@@ -16,48 +16,113 @@ zle -N down-line-or-beginning-search
 bindkey "\e[A" up-line-or-beginning-search # Up
 bindkey "\e[B" down-line-or-beginning-search # Down
 
-# Saut de mot avec Option (macOS)
-bindkey "\e[1;3C" forward-word   # Option + Right
-bindkey "\e[1;3D" backward-word  # Option + Left
-
-# Saut de mot avec Ctrl (si jamais utile ailleurs)
-bindkey "\e[1;5C" forward-word  # Ctrl + Right (désactivé par macOS)
-bindkey "\e[1;5D" backward-word # Ctrl + Left (désactivé par macOS)
+# Saut de mot avec Ctrl
+bindkey "\e[1;5C" forward-word  # Ctrl + Right
+bindkey "\e[1;5D" backward-word # Ctrl + Left
 
 # # Optimiser la recherche dans l'historique
 bindkey "^R" history-incremental-search-backward  # Recherche incrémentielle
 
-# Fonction pour sauter vers le prochain underscore (macOS)
-# Fonction optimisée pour sauter vers le prochain underscore (Zsh 5.9+)
-forward-to-underscore() {
+# Separator characters to stop at (customize this string)
+ZSH_SEPARATOR_CHARS='/|,;._-:=@'
+
+# Jump forward to next separator character
+forward-to-separator() {
   local pos=$((CURSOR + 1))
   while (( pos <= ${#BUFFER} )); do
-    if [[ ${BUFFER[pos]} == '_' ]]; then
+    if [[ "$ZSH_SEPARATOR_CHARS" == *"${BUFFER[pos]}"* ]]; then
       CURSOR=$pos
       return 0
     fi
     (( pos++ ))
   done
-  CURSOR=${#BUFFER}  # Fin de ligne si aucun underscore trouvé
+  CURSOR=${#BUFFER}
 }
 
-# Fonction optimisée pour sauter vers le underscore précédent
-backward-to-underscore() {
+# Jump backward to previous separator character
+backward-to-separator() {
   local pos=$((CURSOR - 1))
   while (( pos >= 1 )); do
-    if [[ ${BUFFER[pos]} == '_' ]]; then
+    if [[ "$ZSH_SEPARATOR_CHARS" == *"${BUFFER[pos]}"* ]]; then
       CURSOR=$pos
       return 0
     fi
     (( pos-- ))
   done
-  CURSOR=0  # Début de ligne si aucun underscore trouvé
+  CURSOR=0
 }
 
-# Enregistre les widgets
-zle -N forward-to-underscore
-zle -N backward-to-underscore
+zle -N forward-to-separator
+zle -N backward-to-separator
 
-# Associe les raccourcis (ex: Option + Maj + Right/Left)
-bindkey "\e[1;7C" forward-to-underscore   # Option + CTRL + Right
-bindkey "\e[1;7D" backward-to-underscore  # Option + CTRL + Left
+# Option + Right/Left → jump to next/previous separator
+bindkey "\e[1;3C" forward-to-separator   # Option + Right
+bindkey "\e[1;3D" backward-to-separator  # Option + Left
+
+# Jump forward to next blank (space/tab)
+forward-to-blank() {
+  local pos=$((CURSOR + 1))
+  while (( pos <= ${#BUFFER} )); do
+    if [[ ${BUFFER[pos]} == [[:blank:]] ]]; then
+      CURSOR=$pos
+      return 0
+    fi
+    (( pos++ ))
+  done
+  CURSOR=${#BUFFER}
+}
+
+# Jump backward to previous blank (space/tab)
+backward-to-blank() {
+  local pos=$((CURSOR - 1))
+  while (( pos >= 1 )); do
+    if [[ ${BUFFER[pos]} == [[:blank:]] ]]; then
+      CURSOR=$pos
+      return 0
+    fi
+    (( pos-- ))
+  done
+  CURSOR=0
+}
+
+zle -N forward-to-blank
+zle -N backward-to-blank
+
+# Option + Ctrl + Right/Left → jump to next/previous blank
+bindkey "\e[1;7C" forward-to-blank   # Option + Ctrl + Right
+bindkey "\e[1;7D" backward-to-blank  # Option + Ctrl + Left
+
+# Delete backward to previous separator character
+backward-delete-to-separator() {
+  local pos=$((CURSOR - 1))
+  while (( pos >= 1 )); do
+    if [[ "$ZSH_SEPARATOR_CHARS" == *"${BUFFER[pos]}"* ]]; then
+      break
+    fi
+    (( pos-- ))
+  done
+  BUFFER="${BUFFER[1,pos]}${BUFFER[$((CURSOR + 1)),${#BUFFER}]}"
+  CURSOR=$pos
+}
+
+# Delete backward to previous blank (space/tab)
+backward-delete-to-blank() {
+  local pos=$((CURSOR - 1))
+  while (( pos >= 1 )); do
+    if [[ ${BUFFER[pos]} == [[:blank:]] ]]; then
+      break
+    fi
+    (( pos-- ))
+  done
+  BUFFER="${BUFFER[1,pos]}${BUFFER[$((CURSOR + 1)),${#BUFFER}]}"
+  CURSOR=$pos
+}
+
+zle -N backward-delete-to-separator
+zle -N backward-delete-to-blank
+
+# Option + Delete → delete backward to previous separator
+# Requires iTerm2 key mapping: Option+Delete → Send Escape Sequence → [3;3~
+bindkey "\e[3;3~" backward-delete-to-separator       # Option + Delete
+# Option + Ctrl + Delete → delete backward to previous blank
+bindkey "\e[3;7~" backward-delete-to-blank           # Option + Ctrl + Delete
